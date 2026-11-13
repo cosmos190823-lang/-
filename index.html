@@ -62,7 +62,7 @@ input[type=range]{width:100%}
 .fv,.dsh{touch-action:none}
 #map svg{user-select:none;-webkit-user-select:none}
 .lb,.hub{touch-action:none}
-.src{font-size:9px;fill:var(--mu);text-anchor:start;stroke:var(--bg);stroke-width:3px;paint-order:stroke;opacity:.95;pointer-events:none}
+.src{font-size:10px;fill:var(--mu);text-anchor:end;stroke:var(--bg);stroke-width:3px;paint-order:stroke;opacity:.95;pointer-events:none}
 </style>
 </head>
 <body>
@@ -74,6 +74,7 @@ input[type=range]{width:100%}
 <label class="tg" style="margin:0 0 0 auto;color:var(--tx)"><input type="checkbox" id="showMe"> 가운데 나 표시</label>
 </div>
 <div class="bar" style="margin-top:8px"><button class="btn" id="zi">＋</button><button class="btn" id="zo">－</button><button class="btn" id="zf">맞춤</button><button class="btn" id="rs">배치 초기화</button><button class="btn" id="bk">백업</button><button class="btn" id="px" style="margin-left:auto">PNG로 저장</button></div>
+<div class="bar" style="margin-top:8px;flex-wrap:nowrap"><label for="gsrc" style="margin:0;white-space:nowrap">출처</label><input type="text" id="gsrc" maxlength="60"></div>
 <div id="map"></div>
 <p class="note">분홍 실선 원은 내 최애, 점선 원은 CP 멤버·드림주예요. 인물을 누르면 수정, 꾹 끌면 위치를 옮길 수 있어요(나와 가깝게 두면 더 가까운 최애처럼 보여요). CP 이름·점, 관계 글씨도 끌어서 옮길 수 있고, CP 글씨를 누르면 CP 수정이에요. 사진과 내용은 이 기기 브라우저에만 저장돼요.</p>
 </main>
@@ -82,7 +83,6 @@ input[type=range]{width:100%}
 <b id="dcT">추가</b>
 <label>사진</label><div style="display:flex;gap:10px;align-items:center"><div class="pv" id="pv"></div><input type="file" id="fl" accept="image/*"></div>
 <label>이름</label><input type="text" id="cn" maxlength="30">
-<label>출처</label><input type="text" id="csrc" maxlength="30">
 <label>구분</label><div class="tp"><label><input type="radio" name="ct" value="fav">내 최애</label><label><input type="radio" name="ct" value="ship">CP 멤버 (최애 아님)</label><label><input type="radio" name="ct" value="dream">드림주</label></div>
 <div id="rw"><label>성별 (같은 성별끼리 모여 보입니다)</label><div class="tp"><label><input type="radio" name="cg" value="m">남자</label><label><input type="radio" name="cg" value="f">여자</label><label><input type="radio" name="cg" value="o">기타</label></div><label>나와의 관계 (서방님, 웬수놈편, 아내, 최애 등….)</label><input type="text" id="cr" maxlength="20"></div>
 <div class="acts"><button class="btn d" id="cd">삭제</button><button class="btn" id="cx">취소</button><button class="btn p" id="cs">저장</button></div>
@@ -101,7 +101,6 @@ input[type=range]{width:100%}
 <b>나</b>
 <label>사진</label><div style="display:flex;gap:10px;align-items:center"><div class="pv" id="mpv"></div><input type="file" id="mfl" accept="image/*"></div>
 <label>이름</label><input type="text" id="mn" maxlength="30">
-<label>출처</label><input type="text" id="msrc" maxlength="30">
 <div class="acts"><button class="btn" id="mx">취소</button><button class="btn p" id="ms">저장</button></div>
 </form></dialog>
 
@@ -122,13 +121,13 @@ try{var raw=localStorage.getItem(KEY);if(raw){var o=JSON.parse(raw);if(o&&o.char
 var $=function(i){return document.getElementById(i)};
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function uid(){return "i"+Math.random().toString(36).slice(2,9)}
-function find(id){return id==="me"?{id:"me",name:S.me.name||"나",photo:S.me.photo,src:S.me.src}:S.chars.filter(function(c){return c.id===id})[0]}
+function find(id){return id==="me"?{id:"me",name:S.me.name||"나",photo:S.me.photo}:S.chars.filter(function(c){return c.id===id})[0]}
 function cut(s){s=s||"";return s.length>9?s.slice(0,9)+"…":s}
 
 var zoom=null;
 function hsh(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))%9973;return h/9973}
 function render(mode){
- $("showMe").checked=S.showMe;
+ $("showMe").checked=S.showMe;if(document.activeElement!==$("gsrc"))$("gsrc").value=S.src||"";
  var TAU=2*Math.PI,gx={m:0,f:1},cpI={},man=S.man||{};
  S.ships.forEach(function(s,i){s.members.forEach(function(m){if(cpI[m]==null)cpI[m]=i})});
  var isN=function(c){return c.type==="ship"||c.type==="dream"};
@@ -144,7 +143,7 @@ function render(mode){
  if(S.showMe)rects.push([-50,-50,50,70]);
  function box(id,x,y){
   var o=find(id),non=isN(o),rr=non?24:32,nw=cut(o.name).length*12.5+6,
-  hw=Math.max(rr,nw/2,o.src?rr*.74+Math.min(o.src.length,15)*5.6:0)+4,top=rr+4,bot=rr+20+((!S.showMe&&!non&&o.rel)?12:0)+4;
+  hw=Math.max(rr,nw/2)+4,top=rr+4,bot=rr+20+((!S.showMe&&!non&&o.rel)?12:0)+4;
   return [x-hw,y-top,x+hw,y+bot];
  }
  function put(id,a,r0){
@@ -210,20 +209,19 @@ function render(mode){
  else{lr.forEach(function(q){rects.push(q)});if(!rects.length)rects.push([-60,-60,60,60]);
   x1=1e9;y1=1e9;var x2=-1e9,y2=-1e9;
   rects.forEach(function(t){x1=Math.min(x1,t[0]);y1=Math.min(y1,t[1]);x2=Math.max(x2,t[2]);y2=Math.max(y2,t[3])});
-  x1-=14;y1-=14;x2+=14;y2+=14;W=x2-x1;H=y2-y1;window._vb=[x1,y1,W,H]}
+  x1-=14;y1-=14;x2+=14;y2+=14+(S.src?10:0);W=x2-x1;H=y2-y1;window._vb=[x1,y1,W,H]}
  var order=ids.slice();if(S.showMe)order.push("me");
  order.forEach(function(id,i){
   var p=pos[id],o=find(id),me=id==="me",non=!me&&isN(o),r=me?46:non?24:32,k="k"+i,x=p.x,y=p.y;
   nodes+='<g class="'+(me?"me":non?"dsh":"fv")+'" '+(me?'data-me="1"':'data-c="'+id+'"')+' style="cursor:pointer"><clipPath id="'+k+'"><circle cx="'+x+'" cy="'+y+'" r="'+r+'"/></clipPath><circle class="nd" cx="'+x+'" cy="'+y+'" r="'+r+'"/>'+
    (o.photo?'<image href="'+o.photo+'" x="'+(x-r)+'" y="'+(y-r)+'" width="'+2*r+'" height="'+2*r+'" preserveAspectRatio="xMidYMid slice" clip-path="url(#'+k+')"/><circle class="nd" cx="'+x+'" cy="'+y+'" r="'+r+'" style="fill:none"/>':'<text class="ini" x="'+x+'" y="'+(y+8)+'">'+esc((o.name||"?").slice(0,1))+'</text>')+
    '<text class="t" x="'+x+'" y="'+(y+r+14)+'">'+esc(cut(o.name))+'</text>';
-  if(o.src)nodes+='<text class="src" x="'+(x+r*.74)+'" y="'+(y+r*.97)+'">'+esc((o.src.length>14?o.src.slice(0,14)+"…":o.src))+'</text>';
   if(!me&&!non&&!S.showMe&&o.rel)nodes+='<text class="t m" x="'+x+'" y="'+(y+r+26)+'">'+esc(cut(o.rel))+'</text>';
   nodes+='</g>';
  });
  var avail=$("map").clientWidth||360,fit=avail/W,z=zoom==null?Math.max(.7,fit):zoom;
  window._fit=fit;window._z=z;
- var h='<svg viewBox="'+x1+' '+y1+' '+W+' '+H+'" style="width:'+Math.round(W*z)+'px">'+lines+nodes+labs+'</svg>';
+ var h='<svg viewBox="'+x1+' '+y1+' '+W+' '+H+'" style="width:'+Math.round(W*z)+'px">'+lines+nodes+labs+(S.src?'<text class="src" x="'+(x1+W-8)+'" y="'+(y1+H-6)+'">'+esc(S.src)+'</text>':'')+'</svg>';
  if(!S.chars.length)h+='<div class="hint">“＋ 최애 추가”로 첫 최애를 넣어보세요.</div>';
  var sl=$("map").scrollLeft;
  $("map").innerHTML=h;
@@ -248,7 +246,7 @@ document.querySelectorAll('input[name=ct]').forEach(function(r){r.onchange=tpS})
 function openC(id,tp){
  cur=id?find(id):null;tmp=cur?cur.photo:"";tp=cur?(cur.type||"fav"):(tp||"fav");
  $("dcT").textContent=cur?"수정":"추가";
- $("cn").value=cur?cur.name:"";$("csrc").value=cur?(cur.src||""):"";$("cr").value=cur?(cur.rel||""):"";
+ $("cn").value=cur?cur.name:"";$("cr").value=cur?(cur.rel||""):"";
  document.querySelector('input[name=ct][value='+tp+']').checked=true;tpS();document.querySelector('input[name=cg][value='+((cur&&cur.g)||"o")+']').checked=true;
  setPv($("pv"),tmp);$("fl").value="";
  $("cd").style.display=cur?"":"none";arm($("cd"),delC);$("dc").showModal();
@@ -265,7 +263,7 @@ $("cx").onclick=function(){$("dc").close()};
 $("cs").onclick=function(){
  var n=$("cn").value.trim();if(!n){$("cn").focus();return}
  var tp=document.querySelector('input[name=ct]:checked').value;
- var d={name:n,photo:tmp,src:$("csrc").value.trim(),type:tp,g:document.querySelector('input[name=cg]:checked').value,rel:tp==="fav"?$("cr").value.trim():""};
+ var d={name:n,photo:tmp,type:tp,g:document.querySelector('input[name=cg]:checked').value,rel:tp==="fav"?$("cr").value.trim():""};
  if(cur)Object.assign(cur,d);else{d.id=uid();S.chars.push(d);if($("ds").open){var sel=pkSel();sel.push(d.id);pkR(sel)}}
  save();render();$("dc").close();
 };
@@ -292,8 +290,10 @@ $("ss").onclick=function(){
 var mt="";
 $("mfl").onchange=function(){if(this.files[0])shrink(this.files[0],function(d){mt=d;setPv($("mpv"),d)})};
 $("mx").onclick=function(){$("dm").close()};
-$("ms").onclick=function(){S.me.name=$("mn").value.trim()||"나";S.me.photo=mt;S.me.src=$("msrc").value.trim();save();render();$("dm").close()};
+$("ms").onclick=function(){S.me.name=$("mn").value.trim()||"나";S.me.photo=mt;save();render();$("dm").close()};
 
+$("gsrc").oninput=function(){S.src=this.value.trim();save();render("drag")};
+$("gsrc").onchange=function(){render()};
 $("addC").onclick=function(){openC()};
 $("addS").onclick=function(){openS()};
 $("showMe").onchange=function(){S.showMe=this.checked;save();render()};
@@ -301,7 +301,7 @@ document.addEventListener("click",function(e){
  var t=e.target.closest("[data-c],[data-me],[data-s]");if(!t||!t.closest("#map"))return;if(window._dg)return;
  if(t.dataset.c)openC(t.dataset.c);
  else if(t.dataset.s)openS(t.dataset.s);
- else{mt=S.me.photo;$("mn").value=S.me.name;$("msrc").value=S.me.src||"";setPv($("mpv"),mt);$("mfl").value="";$("dm").showModal()}
+ else{mt=S.me.photo;$("mn").value=S.me.name;setPv($("mpv"),mt);$("mfl").value="";$("dm").showModal()}
 });
 $("zi").onclick=function(){zoom=Math.min(2.5,window._z*1.25);render()};
 $("zo").onclick=function(){zoom=Math.max(.3,window._z/1.25);render()};
