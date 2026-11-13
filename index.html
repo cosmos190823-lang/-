@@ -91,7 +91,7 @@ input[type=range]{width:100%}
 </div>
 <div class="bar" style="margin-top:10px">
 <div class="seg"><button type="button" id="zo">－</button><button type="button" id="zf">크기</button><button type="button" id="zi">＋</button></div>
-<button class="btn sm" id="bk">백업</button><button class="btn sm" id="sb">출처</button><button class="btn sm" id="px">PNG로 저장</button>
+<button class="btn sm" id="bk">백업</button><button class="btn sm" id="sb">출처</button><button class="btn sm" id="px">PNG로 저장</button><button class="btn sm d" id="rb">초기화</button>
 </div>
 <div id="map"></div>
 <p class="note">분홍 실선 원은 내 최애, 점선 원은 최애 외 인물이에요. 인물을 누르면 수정, 꾹 끌면 위치를 옮길 수 있어요(나와 가깝게 두면 더 가까운 최애처럼 보여요). 관계선 위의 이름·점, 나와의 관계 글씨도 끌어서 옮길 수 있고, 관계 글씨를 누르면 관계 수정이에요. 사진과 내용은 이 기기 브라우저에만 저장돼요.</p>
@@ -115,6 +115,14 @@ input[type=range]{width:100%}
 <label>관계 이름</label><input type="text" id="sr" maxlength="20">
 <div class="err" id="se"></div>
 <div class="acts"><button class="btn d" id="sd">삭제</button><button class="btn" id="sx">취소</button><button class="btn p" id="ss">저장</button></div>
+</form></dialog>
+
+<dialog id="dr"><form method="dialog" onsubmit="return false">
+<b>초기화</b>
+<div class="note" style="margin:8px 0;text-align:left">최애, 관계, 사진, 출처가 모두 지워지고 처음 상태로 돌아가요. 되돌릴 수 없으니 필요하면 먼저 백업 파일을 저장하세요.</div>
+<button class="btn" id="rbk" type="button">백업 파일 저장</button>
+<div class="note" id="rm" style="margin:8px 0 0;text-align:left"></div>
+<div class="acts"><button class="btn" id="rx" type="button">취소</button><button class="btn p" id="rgo" type="button">모두 지우기</button></div>
 </form></dialog>
 
 <dialog id="dsr"><form method="dialog" onsubmit="return false">
@@ -348,6 +356,10 @@ $("ms").onclick=function(){S.me.name=$("mn").value.trim()||"나";S.me.photo=mt;s
 
 $("gsrc").oninput=function(){S.src=this.value.trim();save();render("drag")};
 $("gsrc").onchange=function(){render()};
+$("rb").onclick=function(){$("rm").textContent="";$("dr").showModal()};
+$("rx").onclick=function(){$("dr").close()};
+$("rbk").onclick=function(){$("bm1").onclick();$("rm").textContent="백업 파일을 저장했어요."};
+$("rgo").onclick=function(){S={me:{name:"나",photo:""},showMe:true,chars:[],ships:[],man:{},lp:{},src:"",cpOn:true};ensureCats();zoom=null;save();render();$("dr").close()};
 $("sb").onclick=function(){$("gsrc").value=S.src||"";$("dsr").showModal()};
 $("sbk").onclick=function(){$("dsr").close()};
 $("addC").onclick=function(){openC()};
