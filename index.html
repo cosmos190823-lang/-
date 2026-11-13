@@ -19,7 +19,16 @@ button,input{font:inherit;color:inherit}
 .btn{border:1px solid var(--ln);background:var(--sf);border-radius:20px;padding:8px 14px;cursor:pointer}
 .btn.p{background:var(--ac);border-color:var(--ac);color:var(--on);font-weight:700}
 .btn.d{color:var(--ac)}
-.tg{display:flex;align-items:center;gap:6px;margin-left:auto}
+.chk{display:flex;align-items:center;gap:6px;margin:0;font-size:14px;color:var(--tx)}
+.pill{display:flex;align-items:center;gap:8px;margin:0;color:var(--tx);font-size:14px;border:1px solid var(--ln);background:var(--sf);border-radius:20px;padding:7px 14px}
+.pill:focus-within{border-color:var(--ac)}
+.pill.src{flex:1;min-width:0}
+.pill.src span{color:var(--mu);white-space:nowrap}
+.pill.src input{flex:1;min-width:0;width:auto;border:0;background:transparent;padding:0;border-radius:0;outline:none;font-size:15px}
+.seg{display:inline-flex;border:1px solid var(--ln);background:var(--sf);border-radius:20px;overflow:hidden}
+.seg button{border:0;background:none;padding:7px 13px;cursor:pointer;font-size:14px}
+.seg button+button{border-left:1px solid var(--ln)}
+.btn.sm{padding:7px 13px;font-size:14px}
 #map svg{display:block;width:100%;height:auto;margin:10px auto 0;touch-action:manipulation}
 .nd{fill:var(--ac2);stroke:var(--ln);stroke-width:2}
 .me .nd{stroke:var(--ac);stroke-width:3}
@@ -44,7 +53,7 @@ input[type=text]{width:100%;border:1px solid var(--ln);background:var(--bg);bord
 .pk label,.tp label{display:flex;align-items:center;gap:6px;margin:0;color:var(--tx);border:1px solid var(--ln);border-radius:16px;padding:5px 10px}
 .bd{font-size:11px;color:var(--mu)}
 .acts{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
-.pv{width:72px;height:72px;border-radius:50%;background:var(--ac2) center/cover;border:2px solid var(--ln)}
+.pv{flex:none;width:72px;height:72px;border-radius:50%;background:var(--ac2) center/cover;border:2px solid var(--ln)}
 .cw{position:relative;width:280px;height:280px;margin:12px auto;overflow:hidden;border-radius:8px;touch-action:none;background:#000}
 .cw canvas{display:block}
 .cw i{position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 400px rgba(0,0,0,.55);pointer-events:none}
@@ -74,37 +83,50 @@ input[type=range]{width:100%}
 <h1>💞 내 최애 관계표</h1>
 <div class="bar">
 <button class="btn p" id="addC">＋ 최애 추가</button>
-<button class="btn p" id="addS">＋ CP 추가</button>
-<label class="tg" style="margin:0 0 0 auto;color:var(--tx)"><input type="checkbox" id="cpOn"> CP 표시</label><label class="tg" style="margin:0;color:var(--tx)"><input type="checkbox" id="showMe"> 가운데 나 표시</label>
+<button class="btn p" id="addS">＋ 관계 추가</button>
 </div>
-<div class="bar" style="margin-top:8px"><button class="btn" id="zi">＋</button><button class="btn" id="zo">－</button><button class="btn" id="zf">맞춤</button><button class="btn" id="rs">배치 초기화</button><button class="btn" id="bk">백업</button><button class="btn" id="px" style="margin-left:auto">PNG로 저장</button></div>
-<div class="bar" style="margin-top:8px;flex-wrap:nowrap"><label for="gsrc" style="margin:0;white-space:nowrap">출처</label><input type="text" id="gsrc" maxlength="60"></div>
+<div class="bar" style="margin-top:10px">
+<label class="chk"><input type="checkbox" id="cpOn"> 관계 표시</label>
+<label class="chk"><input type="checkbox" id="showMe"> 가운데 나 표시</label>
+</div>
+<div class="bar" style="margin-top:10px">
+<div class="seg"><button type="button" id="zo">－</button><button type="button" id="zf">크기</button><button type="button" id="zi">＋</button></div>
+<button class="btn sm" id="bk">백업</button><button class="btn sm" id="sb">출처</button><button class="btn sm" id="px">PNG로 저장</button>
+</div>
 <div id="map"></div>
-<p class="note">분홍 실선 원은 내 최애, 점선 원은 CP 멤버·드림주예요. 인물을 누르면 수정, 꾹 끌면 위치를 옮길 수 있어요(나와 가깝게 두면 더 가까운 최애처럼 보여요). CP 이름·점, 관계 글씨도 끌어서 옮길 수 있고, CP 글씨를 누르면 CP 수정이에요. 사진과 내용은 이 기기 브라우저에만 저장돼요.</p>
+<p class="note">분홍 실선 원은 내 최애, 점선 원은 최애 외 인물이에요. 인물을 누르면 수정, 꾹 끌면 위치를 옮길 수 있어요(나와 가깝게 두면 더 가까운 최애처럼 보여요). 관계선 위의 이름·점, 나와의 관계 글씨도 끌어서 옮길 수 있고, 관계 글씨를 누르면 관계 수정이에요. 사진과 내용은 이 기기 브라우저에만 저장돼요.</p>
 </main>
 
 <dialog id="dc"><form method="dialog" onsubmit="return false">
 <b id="dcT">추가</b>
 <label>사진</label><div style="display:flex;gap:10px;align-items:center"><div class="pv" id="pv"></div><input type="file" id="fl" accept="image/*"></div>
 <label>이름</label><input type="text" id="cn" maxlength="30">
-<div id="tw"><label>구분</label><div class="tp"><label><input type="radio" name="ct" value="fav">내 최애</label><label><input type="radio" name="ct" value="ship">CP 멤버 (최애 아님)</label><label><input type="radio" name="ct" value="dream">드림주</label></div></div>
-<div id="rw"><label>성별 (같은 성별끼리 모여 보입니다)</label><div class="tp"><label><input type="radio" name="cg" value="m">남자</label><label><input type="radio" name="cg" value="f">여자</label><label><input type="radio" name="cg" value="o">기타</label></div><label>나와의 관계 (서방님, 웬수놈편, 아내, 최애 등….)</label><input type="text" id="cr" maxlength="20"></div>
+<div id="tw"><label>구분</label><div class="tp"><label><input type="radio" name="ct" value="fav">내 최애</label><label><input type="radio" name="ct" value="ship">최애 외 인물</label></div><div class="note" id="tn" style="margin:8px 0 0;text-align:left"></div></div>
+<div id="rw"><label>성별 (같은 성별끼리 모여 보입니다)</label><div class="tp"><label><input type="radio" name="cg" value="m">남자</label><label><input type="radio" name="cg" value="f">여자</label><label><input type="radio" name="cg" value="o">기타</label></div><label>나와의 관계 (서방님, 웬수놈편, 아내, 딸래미 등….)</label><input type="text" id="cr" maxlength="20"></div>
 <div class="acts"><button class="btn d" id="cd">삭제</button><button class="btn" id="cx">취소</button><button class="btn p" id="cs">저장</button></div>
 </form></dialog>
 
 <dialog id="ds"><form method="dialog" onsubmit="return false">
-<b id="dsT">CP 추가</b>
+<b id="dsT">관계 추가</b>
 <label>멤버 (2명 이상, 원하는 만큼 선택)</label><div class="pk" id="pk"></div>
-<div class="chips"><button type="button" id="ac1">＋ 최애 아닌 CP 멤버</button><button type="button" id="ac2">＋ 드림주</button></div>
+<div class="chips"><button type="button" id="ac1">＋ 최애 외 인물 추가</button></div>
+<div class="note" style="margin:6px 0 0;text-align:left">최애는 아니지만 관계에 필요한 인물(내 드림주, 최애와 짝을 이루는 캐릭터 등)이 목록에 없으면 여기서 추가하세요.</div>
 <label>카테고리 (선 색깔)</label><div class="pk" id="cats"></div><div class="chips"><button type="button" id="catM">카테고리 추가·편집</button></div>
-<label>CP 관계</label><input type="text" id="sr" maxlength="20">
+<label>관계 이름</label><input type="text" id="sr" maxlength="20">
 <div class="err" id="se"></div>
 <div class="acts"><button class="btn d" id="sd">삭제</button><button class="btn" id="sx">취소</button><button class="btn p" id="ss">저장</button></div>
 </form></dialog>
 
+<dialog id="dsr"><form method="dialog" onsubmit="return false">
+<b>출처</b>
+<div class="note" style="margin:6px 0 0;text-align:left">커미션주 등을 적으면 표 오른쪽 아래에 ⓒ와 함께 작게 표시돼요.</div>
+<input type="text" id="gsrc" maxlength="60" style="margin-top:10px">
+<div class="acts"><button class="btn p" id="sbk" type="button">완료</button></div>
+</form></dialog>
+
 <dialog id="dg"><form method="dialog" onsubmit="return false">
-<b>CP 카테고리</b>
-<div class="note" style="margin:6px 0 0;text-align:left">카테고리마다 CP 선 색깔을 정해요. 관계도에는 색깔만 표시돼요.</div>
+<b>관계 카테고리</b>
+<div class="note" style="margin:6px 0 0;text-align:left">카테고리마다 관계선 색깔을 정해요. 관계도에는 색깔만 표시돼요.</div>
 <div id="cl"></div>
 <button class="btn" id="cadd" type="button" style="margin-top:12px">＋ 카테고리 추가</button>
 <div class="acts"><button class="btn p" id="cok" type="button">완료</button></div>
@@ -149,7 +171,8 @@ function render(mode){
  $("showMe").checked=S.showMe;if(document.activeElement!==$("gsrc"))$("gsrc").value=S.src||"";
  var TAU=2*Math.PI,gx={m:0,f:1},cpI={},man=S.man||{};
  SH.forEach(function(s,i){s.members.forEach(function(m){if(cpI[m]==null)cpI[m]=i})});
- var isN=function(c){return c.type==="ship"||c.type==="dream"};
+ S.chars.forEach(function(c){if(c.type==="dream")c.type="ship"});
+ var isN=function(c){return c.type==="ship"};
  var gi=function(c){return gx[c.g]==null?2:gx[c.g]},ci=function(c){return cpI[c.id]==null?999:cpI[c.id]};
  var gm={},groups=[];
  S.chars.forEach(function(c,i){if(isN(c))return;var rl=(c.rel||"").trim(),k=rl?"r:"+rl:"u:"+c.id;
@@ -262,7 +285,8 @@ function setPv(el,p){el.style.backgroundImage=p?"url("+p+")":"none"}
 function arm(btn,fn){btn.textContent="삭제";btn._a=0;btn.onclick=function(){if(!btn._a){btn._a=1;btn.textContent="한 번 더 누르면 삭제";return}fn()}}
 
 var cur=null,tmp="";
-function tpS(){$("rw").style.display=document.querySelector('input[name=ct]:checked').value==="fav"?"":"none"}
+var TN={fav:"내가 좋아하는 최애예요. 가운데 나와 선으로 이어져요.",ship:"최애는 아니지만 관계선을 잇는 데 필요한 인물이에요. 예) 내 드림주, 최애와 짝을 이루는 캐릭터. 나와는 선으로 이어지지 않아요."};
+function tpS(){$("tn").textContent=TN[document.querySelector('input[name=ct]:checked').value]||"";$("rw").style.display=document.querySelector('input[name=ct]:checked').value==="fav"?"":"none"}
 document.querySelectorAll('input[name=ct]').forEach(function(r){r.onchange=tpS});
 function openC(id,tp){
  cur=id?find(id):null;tmp=cur?cur.photo:"";tp=cur?(cur.type||"fav"):(tp||"fav");
@@ -299,14 +323,13 @@ $("cl").onclick=function(e){var x=e.target.dataset&&e.target.dataset.x;if(x==nul
 $("cadd").onclick=function(){S.cats.push({id:uid(),name:"",color:PAL[S.cats.length%PAL.length]});catR()};
 $("cok").onclick=function(){S.cats.forEach(function(c){if(!c.name.trim())c.name="새 카테고리"});
  var ck=document.querySelector('input[name=sc]:checked');save();render();catPick(ck&&ck.value);$("dg").close()};
-function pkR(sel){var opts=[{id:"me",name:(S.me.name||"나")+" (나)"}].concat(S.chars),h="";opts.forEach(function(o){h+='<label><input type="checkbox" value="'+o.id+'"'+(sel.indexOf(o.id)>-1?" checked":"")+'>'+esc(o.name)+(o.type==="dream"?' <span class="bd">드림주</span>':'')+'</label>'});$("pk").innerHTML=h}
+function pkR(sel){var opts=[{id:"me",name:(S.me.name||"나")+" (나)"}].concat(S.chars),h="";opts.forEach(function(o){h+='<label><input type="checkbox" value="'+o.id+'"'+(sel.indexOf(o.id)>-1?" checked":"")+'>'+esc(o.name)+'</label>'});$("pk").innerHTML=h}
 function pkSel(){return [].slice.call($("pk").querySelectorAll("input:checked")).map(function(i){return i.value})}
 $("ac1").onclick=function(){openC(null,"ship")};
-$("ac2").onclick=function(){openC(null,"dream")};
 function openS(id){
  cs=id?S.ships.filter(function(s){return s.id===id})[0]:null;
  pkR(cs?cs.members:[]);catPick(cs&&cs.cat);$("sr").value=cs?cs.rel:"";$("se").textContent="";
- $("dsT").textContent=cs?"CP 수정":"CP 추가";$("sd").style.display=cs?"":"none";
+ $("dsT").textContent=cs?"관계 수정":"관계 추가";$("sd").style.display=cs?"":"none";
  arm($("sd"),function(){S.ships=S.ships.filter(function(s){return s!==cs});save();render();$("ds").close()});$("ds").showModal();
 }
 $("sx").onclick=function(){$("ds").close()};
@@ -325,6 +348,8 @@ $("ms").onclick=function(){S.me.name=$("mn").value.trim()||"나";S.me.photo=mt;s
 
 $("gsrc").oninput=function(){S.src=this.value.trim();save();render("drag")};
 $("gsrc").onchange=function(){render()};
+$("sb").onclick=function(){$("gsrc").value=S.src||"";$("dsr").showModal()};
+$("sbk").onclick=function(){$("dsr").close()};
 $("addC").onclick=function(){openC()};
 $("addS").onclick=function(){openS()};
 $("cpOn").onchange=function(){S.cpOn=this.checked;save();render()};
@@ -436,7 +461,6 @@ $("map").addEventListener("touchstart",function(e){
  var en=function(){el.removeEventListener("touchmove",mv);el.removeEventListener("touchend",en);el.removeEventListener("touchcancel",en);dEnd()};
  el.addEventListener("touchmove",mv,{passive:false});el.addEventListener("touchend",en);el.addEventListener("touchcancel",en);
 },{passive:true});
-$("rs").onclick=function(){S.man={};S.lp={};save();render()};
 render();
 </script>
 
