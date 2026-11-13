@@ -62,6 +62,10 @@ input[type=range]{width:100%}
 .fv,.dsh{touch-action:none}
 #map svg{user-select:none;-webkit-user-select:none}
 .lb,.hub{touch-action:none}
+.dot{width:12px;height:12px;border-radius:50%;display:inline-block}
+.crow{display:flex;gap:8px;align-items:center;margin-top:10px}
+.crow input[type=color]{width:44px;height:38px;padding:0;border:1px solid var(--ln);border-radius:8px;background:none;flex:none}
+.crow input[type=text]{flex:1;min-width:0}
 .src{font-size:10px;fill:var(--mu);text-anchor:end;stroke:var(--bg);stroke-width:3px;paint-order:stroke;opacity:.95;pointer-events:none}
 </style>
 </head>
@@ -71,7 +75,7 @@ input[type=range]{width:100%}
 <div class="bar">
 <button class="btn p" id="addC">＋ 최애 추가</button>
 <button class="btn p" id="addS">＋ CP 추가</button>
-<label class="tg" style="margin:0 0 0 auto;color:var(--tx)"><input type="checkbox" id="showMe"> 가운데 나 표시</label>
+<label class="tg" style="margin:0 0 0 auto;color:var(--tx)"><input type="checkbox" id="cpOn"> CP 표시</label><label class="tg" style="margin:0;color:var(--tx)"><input type="checkbox" id="showMe"> 가운데 나 표시</label>
 </div>
 <div class="bar" style="margin-top:8px"><button class="btn" id="zi">＋</button><button class="btn" id="zo">－</button><button class="btn" id="zf">맞춤</button><button class="btn" id="rs">배치 초기화</button><button class="btn" id="bk">백업</button><button class="btn" id="px" style="margin-left:auto">PNG로 저장</button></div>
 <div class="bar" style="margin-top:8px;flex-wrap:nowrap"><label for="gsrc" style="margin:0;white-space:nowrap">출처</label><input type="text" id="gsrc" maxlength="60"></div>
@@ -83,7 +87,7 @@ input[type=range]{width:100%}
 <b id="dcT">추가</b>
 <label>사진</label><div style="display:flex;gap:10px;align-items:center"><div class="pv" id="pv"></div><input type="file" id="fl" accept="image/*"></div>
 <label>이름</label><input type="text" id="cn" maxlength="30">
-<label>구분</label><div class="tp"><label><input type="radio" name="ct" value="fav">내 최애</label><label><input type="radio" name="ct" value="ship">CP 멤버 (최애 아님)</label><label><input type="radio" name="ct" value="dream">드림주</label></div>
+<div id="tw"><label>구분</label><div class="tp"><label><input type="radio" name="ct" value="fav">내 최애</label><label><input type="radio" name="ct" value="ship">CP 멤버 (최애 아님)</label><label><input type="radio" name="ct" value="dream">드림주</label></div></div>
 <div id="rw"><label>성별 (같은 성별끼리 모여 보입니다)</label><div class="tp"><label><input type="radio" name="cg" value="m">남자</label><label><input type="radio" name="cg" value="f">여자</label><label><input type="radio" name="cg" value="o">기타</label></div><label>나와의 관계 (서방님, 웬수놈편, 아내, 최애 등….)</label><input type="text" id="cr" maxlength="20"></div>
 <div class="acts"><button class="btn d" id="cd">삭제</button><button class="btn" id="cx">취소</button><button class="btn p" id="cs">저장</button></div>
 </form></dialog>
@@ -92,9 +96,18 @@ input[type=range]{width:100%}
 <b id="dsT">CP 추가</b>
 <label>멤버 (2명 이상, 원하는 만큼 선택)</label><div class="pk" id="pk"></div>
 <div class="chips"><button type="button" id="ac1">＋ 최애 아닌 CP 멤버</button><button type="button" id="ac2">＋ 드림주</button></div>
+<label>카테고리 (선 색깔)</label><div class="pk" id="cats"></div><div class="chips"><button type="button" id="catM">카테고리 추가·편집</button></div>
 <label>CP 관계</label><input type="text" id="sr" maxlength="20">
 <div class="err" id="se"></div>
 <div class="acts"><button class="btn d" id="sd">삭제</button><button class="btn" id="sx">취소</button><button class="btn p" id="ss">저장</button></div>
+</form></dialog>
+
+<dialog id="dg"><form method="dialog" onsubmit="return false">
+<b>CP 카테고리</b>
+<div class="note" style="margin:6px 0 0;text-align:left">카테고리마다 CP 선 색깔을 정해요. 관계도에는 색깔만 표시돼요.</div>
+<div id="cl"></div>
+<button class="btn" id="cadd" type="button" style="margin-top:12px">＋ 카테고리 추가</button>
+<div class="acts"><button class="btn p" id="cok" type="button">완료</button></div>
 </form></dialog>
 
 <dialog id="dm"><form method="dialog" onsubmit="return false">
@@ -126,10 +139,16 @@ function cut(s){s=s||"";return s.length>9?s.slice(0,9)+"…":s}
 
 var zoom=null;
 function hsh(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))%9973;return h/9973}
+var DEFCATS=[{id:"c1",name:"연인",color:"#d6507f"},{id:"c2",name:"가족",color:"#e0a800"},{id:"c3",name:"친구",color:"#3fae6a"}];
+function ensureCats(){if(!Array.isArray(S.cats)||!S.cats.length)S.cats=JSON.parse(JSON.stringify(DEFCATS))}
+function catColor(s){ensureCats();var c=S.cats.filter(function(x){return x.id===s.cat})[0]||S.cats[0];return c.color}
 function render(mode){
+ ensureCats();
+ var cpOn=S.cpOn!==false,SH=cpOn?S.ships:[],SRC=(S.src||"").replace(/^[ⓒ©]\s*/,"").trim();
+ $("cpOn").checked=cpOn;$("addS").style.display=cpOn?"":"none";
  $("showMe").checked=S.showMe;if(document.activeElement!==$("gsrc"))$("gsrc").value=S.src||"";
  var TAU=2*Math.PI,gx={m:0,f:1},cpI={},man=S.man||{};
- S.ships.forEach(function(s,i){s.members.forEach(function(m){if(cpI[m]==null)cpI[m]=i})});
+ SH.forEach(function(s,i){s.members.forEach(function(m){if(cpI[m]==null)cpI[m]=i})});
  var isN=function(c){return c.type==="ship"||c.type==="dream"};
  var gi=function(c){return gx[c.g]==null?2:gx[c.g]},ci=function(c){return cpI[c.id]==null?999:cpI[c.id]};
  var gm={},groups=[];
@@ -139,7 +158,7 @@ function render(mode){
  groups.sort(function(a,b){return a.gi-b.gi||a.ci-b.ci||a.i-b.i});
  var nf=0;groups.forEach(function(g){nf+=g.m.length});
  var Rb=Math.max(150,nf*62/TAU),ang={},R={},pos={},rects=[];
- var others=S.chars.filter(isN),grp={},left=[],rest=[];
+ var others=cpOn?S.chars.filter(isN):[],grp={},left=[],rest=[];
  if(S.showMe)rects.push([-50,-50,50,70]);
  function box(id,x,y){
   var o=find(id),non=isN(o),rr=non?24:32,nw=cut(o.name).length*12.5+6,
@@ -154,7 +173,7 @@ function render(mode){
    if(ok)break;r+=10}
   rects.push(b);pos[id]={x:x,y:y};R[id]=r;
  }
- S.chars.forEach(function(c){var m=man[c.id];if(m){pos[c.id]={x:m.x,y:m.y};ang[c.id]=Math.atan2(m.y,m.x);R[c.id]=Math.hypot(m.x,m.y);rects.push(box(c.id,m.x,m.y))}});
+ (cpOn?S.chars:S.chars.filter(function(c){return !isN(c)})).forEach(function(c){var m=man[c.id];if(m){pos[c.id]={x:m.x,y:m.y};ang[c.id]=Math.atan2(m.y,m.x);R[c.id]=Math.hypot(m.x,m.y);rects.push(box(c.id,m.x,m.y))}});
  var a0=-Math.PI/2;
  groups.forEach(function(g){var sec=TAU*g.m.length/nf,rg=Rb*(.8+.5*hsh(g.k));
   g.m.forEach(function(c,j){if(pos[c.id])return;var a=a0+sec*(j+.5)/g.m.length+(hsh(c.id)-.5)*.12;ang[c.id]=a;put(c.id,a,rg+hsh(c.id)*25)});a0+=sec});
@@ -172,10 +191,11 @@ function render(mode){
  var ids=[];groups.forEach(function(g){g.m.forEach(function(c){ids.push(c.id)})});others.forEach(function(o){ids.push(o.id)});
  var lines="",nodes="",labs="";
  var LP={},lr=[];window._lp=LP;
- function lab(cls,x,y,t,s,key,follow){
+ function lab(cls,x,y,t,s,key,follow,col){
+  if(!t){if(key&&!follow){var q0=(S.lp||{})[key];if(q0){x=q0.x;y=q0.y}LP[key]={x:x,y:y}}return''}
   if(key&&!follow){var q=(S.lp||{})[key];if(q){x=q.x;y=q.y}LP[key]={x:x,y:y}}
   lr.push([x-45,y-14,x+45,y+14]);
-  return '<text class="lb '+cls+'"'+(s?' data-s="'+s+'"':'')+(key?' data-lk="'+esc(key)+'"':'')+' x="'+x+'" y="'+(y+4)+'">'+esc(t)+'</text>'}
+  return '<text class="lb '+cls+'"'+(s?' data-s="'+s+'"':'')+(key?' data-lk="'+esc(key)+'"':'')+(col?' style="fill:'+col+'"':'')+' x="'+x+'" y="'+(y+4)+'">'+esc(t)+'</text>'}
  if(S.showMe)groups.forEach(function(g){
   var ps=g.m.map(function(c){return pos[c.id]});
   if(ps.length===1){var p=ps[0],d=Math.hypot(p.x,p.y)||1,t=(46+Math.max(d-32,70))/2/d;
@@ -187,8 +207,8 @@ function render(mode){
   ps.forEach(function(p){lines+='<line class="rl" x1="'+bx+'" y1="'+by+'" x2="'+p.x+'" y2="'+p.y+'"/>'});
   if(g.rel)labs+=lab("lr",bx*t,by*t,cut(g.rel),null,"g:"+g.k);
  });
- S.ships.forEach(function(s){
-  var ms=s.members.filter(function(m){return pos[m]}),lb=cut(s.rel)||"CP";
+ SH.forEach(function(s){
+  var col=catColor(s),ms=s.members.filter(function(m){return pos[m]}),lb=cut(s.rel);
   if(ms.length<2)return;
   if(ms.length===2){var a=pos[ms[0]],b=pos[ms[1]],mx=(a.x+b.x)/2,my=(a.y+b.y)/2,dx=b.x-a.x,dy=b.y-a.y,L=Math.sqrt(dx*dx+dy*dy)||1,
     vx=mx,vy=my,vl=Math.sqrt(vx*vx+vy*vy),bend=50;
@@ -196,20 +216,21 @@ function render(mode){
    var qx=mx+vx/vl*bend,qy=my+vy/vl*bend,key="s:"+s.id,lp=(S.lp||{})[key],lx=lp?lp.x:mx/2+qx/2,ly=lp?lp.y:my/2+qy/2;
    if(lp){qx=2*lx-mx;qy=2*ly-my}
    var d='M'+a.x+' '+a.y+' Q'+qx+' '+qy+' '+b.x+' '+b.y;
-   lines+='<path class="cp" d="'+d+'"/><path class="hit" data-s="'+s.id+'" d="'+d+'"/>';
-   labs+=lab("lc",lx,ly,lb,s.id,key);
+   lines+='<path class="cp" style="stroke:'+col+'" d="'+d+'"/><path class="hit" data-s="'+s.id+'" d="'+d+'"/>';
+   if(lb)labs+=lab("lc",lx,ly,lb,s.id,key,false,col);
+   else{LP[key]={x:lx,y:ly};lr.push([lx-12,ly-12,lx+12,ly+12]);labs+='<circle class="hub" cx="'+lx+'" cy="'+ly+'" r="5" style="fill:'+col+'" data-s="'+s.id+'" data-lk="'+esc(key)+'"/><circle class="hub" cx="'+lx+'" cy="'+ly+'" r="16" fill="transparent" stroke="none" data-s="'+s.id+'" data-lk="'+esc(key)+'"/>'}
   }else{var hx=0,hy=0,key="s:"+s.id,lp=(S.lp||{})[key];ms.forEach(function(m){hx+=pos[m].x;hy+=pos[m].y});hx/=ms.length;hy/=ms.length;
    if(lp){hx=lp.x;hy=lp.y}LP[key]={x:hx,y:hy};lr.push([hx-30,hy-14,hx+30,hy+30]);
-   ms.forEach(function(m){lines+='<line class="cp" x1="'+pos[m].x+'" y1="'+pos[m].y+'" x2="'+hx+'" y2="'+hy+'"/><line class="hit" data-s="'+s.id+'" x1="'+pos[m].x+'" y1="'+pos[m].y+'" x2="'+hx+'" y2="'+hy+'"/>'});
-   lines+='<circle class="hub" cx="'+hx+'" cy="'+hy+'" r="7" fill="var(--ac)" data-s="'+s.id+'" data-lk="'+esc(key)+'" style="cursor:pointer"/><circle class="hub" cx="'+hx+'" cy="'+hy+'" r="18" fill="transparent" stroke="none" data-s="'+s.id+'" data-lk="'+esc(key)+'"/>';
-   labs+=lab("lc",hx,hy+18,lb,s.id,key,true);}
+   ms.forEach(function(m){lines+='<line class="cp" style="stroke:'+col+'" x1="'+pos[m].x+'" y1="'+pos[m].y+'" x2="'+hx+'" y2="'+hy+'"/><line class="hit" data-s="'+s.id+'" x1="'+pos[m].x+'" y1="'+pos[m].y+'" x2="'+hx+'" y2="'+hy+'"/>'});
+   lines+='<circle class="hub" cx="'+hx+'" cy="'+hy+'" r="7" style="fill:'+col+'" data-s="'+s.id+'" data-lk="'+esc(key)+'" style="cursor:pointer"/><circle class="hub" cx="'+hx+'" cy="'+hy+'" r="18" fill="transparent" stroke="none" data-s="'+s.id+'" data-lk="'+esc(key)+'"/>';
+   labs+=lab("lc",hx,hy+18,lb,s.id,key,true,col);}
  });
  var x1,y1,W,H;
  if(mode==="drag"&&window._vb){x1=window._vb[0];y1=window._vb[1];W=window._vb[2];H=window._vb[3]}
  else{lr.forEach(function(q){rects.push(q)});if(!rects.length)rects.push([-60,-60,60,60]);
   x1=1e9;y1=1e9;var x2=-1e9,y2=-1e9;
   rects.forEach(function(t){x1=Math.min(x1,t[0]);y1=Math.min(y1,t[1]);x2=Math.max(x2,t[2]);y2=Math.max(y2,t[3])});
-  x1-=14;y1-=14;x2+=14;y2+=14+(S.src?10:0);W=x2-x1;H=y2-y1;window._vb=[x1,y1,W,H]}
+  x1-=14;y1-=14;x2+=14;y2+=14+(SRC?10:0);W=x2-x1;H=y2-y1;window._vb=[x1,y1,W,H]}
  var order=ids.slice();if(S.showMe)order.push("me");
  order.forEach(function(id,i){
   var p=pos[id],o=find(id),me=id==="me",non=!me&&isN(o),r=me?46:non?24:32,k="k"+i,x=p.x,y=p.y;
@@ -221,7 +242,7 @@ function render(mode){
  });
  var avail=$("map").clientWidth||360,fit=avail/W,z=zoom==null?Math.max(.7,fit):zoom;
  window._fit=fit;window._z=z;
- var h='<svg viewBox="'+x1+' '+y1+' '+W+' '+H+'" style="width:'+Math.round(W*z)+'px">'+lines+nodes+labs+(S.src?'<text class="src" x="'+(x1+W-8)+'" y="'+(y1+H-6)+'">'+esc(S.src)+'</text>':'')+'</svg>';
+ var h='<svg viewBox="'+x1+' '+y1+' '+W+' '+H+'" style="width:'+Math.round(W*z)+'px">'+lines+nodes+labs+(SRC?'<text class="src" x="'+(x1+W-8)+'" y="'+(y1+H-6)+'">ⓒ '+esc(SRC)+'</text>':'')+'</svg>';
  if(!S.chars.length)h+='<div class="hint">“＋ 최애 추가”로 첫 최애를 넣어보세요.</div>';
  var sl=$("map").scrollLeft;
  $("map").innerHTML=h;
@@ -247,7 +268,7 @@ function openC(id,tp){
  cur=id?find(id):null;tmp=cur?cur.photo:"";tp=cur?(cur.type||"fav"):(tp||"fav");
  $("dcT").textContent=cur?"수정":"추가";
  $("cn").value=cur?cur.name:"";$("cr").value=cur?(cur.rel||""):"";
- document.querySelector('input[name=ct][value='+tp+']').checked=true;tpS();document.querySelector('input[name=cg][value='+((cur&&cur.g)||"o")+']').checked=true;
+ document.querySelector('input[name=ct][value='+tp+']').checked=true;$("tw").style.display=(S.cpOn!==false||(cur&&cur.type&&cur.type!=="fav"))?"":"none";tpS();document.querySelector('input[name=cg][value='+((cur&&cur.g)||"o")+']').checked=true;
  setPv($("pv"),tmp);$("fl").value="";
  $("cd").style.display=cur?"":"none";arm($("cd"),delC);$("dc").showModal();
 }
@@ -268,14 +289,23 @@ $("cs").onclick=function(){
  save();render();$("dc").close();
 };
 
-var cs=null;
+var cs=null,PAL=["#e05a5a","#8a63d2","#3b8fd9","#f08a24","#14a89a","#c2569e"];
+function catPick(sel){ensureCats();var id=S.cats.some(function(c){return c.id===sel})?sel:S.cats[0].id;
+ $("cats").innerHTML=S.cats.map(function(c){return '<label><input type="radio" name="sc" value="'+c.id+'"'+(c.id===id?' checked':'')+'><span class="dot" style="background:'+c.color+'"></span>'+esc(c.name)+'</label>'}).join("")}
+function catR(){$("cl").innerHTML=S.cats.map(function(c,i){return '<div class="crow"><input type="color" value="'+c.color+'" data-i="'+i+'"><input type="text" maxlength="12" value="'+esc(c.name)+'" data-n="'+i+'">'+(S.cats.length>1?'<button class="btn d" type="button" data-x="'+i+'">삭제</button>':'')+'</div>'}).join("")}
+$("catM").onclick=function(){ensureCats();catR();$("dg").showModal()};
+$("cl").oninput=function(e){var d=e.target.dataset;if(d.i!=null)S.cats[+d.i].color=e.target.value;else if(d.n!=null)S.cats[+d.n].name=e.target.value};
+$("cl").onclick=function(e){var x=e.target.dataset&&e.target.dataset.x;if(x==null)return;S.cats.splice(+x,1);catR()};
+$("cadd").onclick=function(){S.cats.push({id:uid(),name:"",color:PAL[S.cats.length%PAL.length]});catR()};
+$("cok").onclick=function(){S.cats.forEach(function(c){if(!c.name.trim())c.name="새 카테고리"});
+ var ck=document.querySelector('input[name=sc]:checked');save();render();catPick(ck&&ck.value);$("dg").close()};
 function pkR(sel){var opts=[{id:"me",name:(S.me.name||"나")+" (나)"}].concat(S.chars),h="";opts.forEach(function(o){h+='<label><input type="checkbox" value="'+o.id+'"'+(sel.indexOf(o.id)>-1?" checked":"")+'>'+esc(o.name)+(o.type==="dream"?' <span class="bd">드림주</span>':'')+'</label>'});$("pk").innerHTML=h}
 function pkSel(){return [].slice.call($("pk").querySelectorAll("input:checked")).map(function(i){return i.value})}
 $("ac1").onclick=function(){openC(null,"ship")};
 $("ac2").onclick=function(){openC(null,"dream")};
 function openS(id){
  cs=id?S.ships.filter(function(s){return s.id===id})[0]:null;
- pkR(cs?cs.members:[]);$("sr").value=cs?cs.rel:"";$("se").textContent="";
+ pkR(cs?cs.members:[]);catPick(cs&&cs.cat);$("sr").value=cs?cs.rel:"";$("se").textContent="";
  $("dsT").textContent=cs?"CP 수정":"CP 추가";$("sd").style.display=cs?"":"none";
  arm($("sd"),function(){S.ships=S.ships.filter(function(s){return s!==cs});save();render();$("ds").close()});$("ds").showModal();
 }
@@ -283,7 +313,8 @@ $("sx").onclick=function(){$("ds").close()};
 $("ss").onclick=function(){
  var ids=pkSel();
  if(ids.length<2){$("se").textContent="2명 이상 골라주세요.";return}
- if(cs){cs.members=ids;cs.rel=$("sr").value.trim()}else S.ships.push({id:uid(),members:ids,rel:$("sr").value.trim()});
+ var ck=document.querySelector('input[name=sc]:checked'),cid=ck?ck.value:S.cats[0].id;
+ if(cs){cs.members=ids;cs.rel=$("sr").value.trim();cs.cat=cid}else S.ships.push({id:uid(),members:ids,rel:$("sr").value.trim(),cat:cid});
  save();render();$("ds").close();
 };
 
@@ -296,6 +327,7 @@ $("gsrc").oninput=function(){S.src=this.value.trim();save();render("drag")};
 $("gsrc").onchange=function(){render()};
 $("addC").onclick=function(){openC()};
 $("addS").onclick=function(){openS()};
+$("cpOn").onchange=function(){S.cpOn=this.checked;save();render()};
 $("showMe").onchange=function(){S.showMe=this.checked;save();render()};
 document.addEventListener("click",function(e){
  var t=e.target.closest("[data-c],[data-me],[data-s]");if(!t||!t.closest("#map"))return;if(window._dg)return;
@@ -379,7 +411,7 @@ $("bf").onchange=function(){
  var r=new FileReader();
  r.onload=function(){try{
   var o=JSON.parse(r.result);if(!o||!Array.isArray(o.chars)||!Array.isArray(o.ships)||!o.me)throw 0;
-  o.man=o.man||{};o.lp=o.lp||{};S=o;save();render();$("db").close();
+  o.man=o.man||{};o.lp=o.lp||{};S=o;ensureCats();save();render();$("db").close();
  }catch(e){$("bm").textContent="백업 파일이 올바르지 않아요. 이 사이트에서 저장한 .json 파일을 골라 주세요."}};
  r.onerror=function(){$("bm").textContent="파일을 읽지 못했어요."};
  r.readAsText(f);
