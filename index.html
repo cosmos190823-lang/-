@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>최애 관계표</title>
+<style>
+:root{--bg:#fbf8fb;--sf:#fff;--tx:#2a2330;--mu:#8b8093;--ln:#cdbfd8;--ac:#d6507f;--ac2:#efe3ff;--on:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16121a;--sf:#221c29;--tx:#f1eaf5;--mu:#a094ab;--ln:#5a4d68;--ac:#ff7aa5;--ac2:#33264a;--on:#2a1020;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#16121a;--sf:#221c29;--tx:#f1eaf5;--mu:#a094ab;--ln:#5a4d68;--ac:#ff7aa5;--ac2:#33264a;--on:#2a1020;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 "Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;padding-bottom:40px}
+main{max-width:640px;margin:0 auto;padding:16px 8px}
+h1{font-size:22px;margin:4px 8px 12px}
+button,input{font:inherit;color:inherit}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:0 8px}
+.btn{border:1px solid var(--ln);background:var(--sf);border-radius:20px;padding:8px 14px;cursor:pointer}
+.btn.p{background:var(--ac);border-color:var(--ac);color:var(--on);font-weight:700}
+.btn.d{color:var(--ac)}
+.tg{display:flex;align-items:center;gap:6px;margin-left:auto}
+#map svg{display:block;width:100%;height:auto;margin:10px auto 0;touch-action:manipulation}
+.nd{fill:var(--ac2);stroke:var(--ln);stroke-width:2}
+.me .nd{stroke:var(--ac);stroke-width:3}
+.dsh .nd{stroke-dasharray:4 3}
+.t{font-size:12px;fill:var(--tx);text-anchor:middle;stroke:var(--bg);stroke-width:4px;paint-order:stroke}
+.m{font-size:10.5px;fill:var(--mu)}
+.ini{font-size:22px;fill:var(--tx);text-anchor:middle}
+.rl{stroke:var(--ln);stroke-width:2;fill:none}
+.cp{stroke:var(--ac);stroke-width:2.5;fill:none}
+.hit{stroke:transparent;stroke-width:18;fill:none;cursor:pointer}
+.lb{font-size:11.5px;text-anchor:middle;stroke:var(--bg);stroke-width:5px;paint-order:stroke;cursor:pointer}
+.lr{fill:var(--mu)}
+.lc{fill:var(--ac);font-weight:700}
+.hint{color:var(--mu);text-align:center;padding:6px 20px}
+dialog{border:0;border-radius:16px;background:var(--sf);color:var(--tx);width:min(92vw,420px);padding:16px}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+label{display:block;font-size:13px;color:var(--mu);margin:12px 0 4px}
+input[type=text]{width:100%;border:1px solid var(--ln);background:var(--bg);border-radius:8px;padding:9px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chips button{border:1px solid var(--ln);background:var(--ac2);border-radius:14px;padding:3px 10px;font-size:13px;cursor:pointer}
+.pk,.tp{display:flex;flex-wrap:wrap;gap:8px}
+.pk label,.tp label{display:flex;align-items:center;gap:6px;margin:0;color:var(--tx);border:1px solid var(--ln);border-radius:16px;padding:5px 10px}
+.bd{font-size:11px;color:var(--mu)}
+.acts{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+.pv{width:72px;height:72px;border-radius:50%;background:var(--ac2) center/cover;border:2px solid var(--ln)}
+.cw{position:relative;width:280px;height:280px;margin:12px auto;overflow:hidden;border-radius:8px;touch-action:none;background:#000}
+.cw canvas{display:block}
+.cw i{position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 400px rgba(0,0,0,.55);pointer-events:none}
+input[type=range]{width:100%}
+.err{color:var(--ac);font-size:13px;margin-top:8px;min-height:1em}
+.note{color:var(--mu);font-size:12px;text-align:center;margin-top:16px}
+.fv .nd{stroke:var(--ac);stroke-width:3}
+.dsh .nd{stroke-width:2}
+.dsh image{filter:grayscale(.55);opacity:.85}
+.pl{fill:var(--ac)}
+.pt{fill:var(--on);font-size:11px;text-anchor:middle;font-weight:700}
+.bgd{fill:var(--ac);stroke:var(--bg);stroke-width:1.5}
+.bgt{fill:var(--on);font-size:9px;text-anchor:middle}
+#map{overflow-x:auto}
+.fv,.dsh{touch-action:none}
+#map svg{user-select:none;-webkit-user-select:none}
+</style>
+</head>
+<body>
+<main>
+<h1>💞 내 최애 관계표</h1>
+<div class="bar">
+<button class="btn p" id="addC">＋ 최애 추가</button>
+<button class="btn p" id="addS">＋ CP 추가</button>
+<label class="tg" style="margin:0 0 0 auto;color:var(--tx)"><input type="checkbox" id="showMe"> 가운데 나 표시</label>
+</div>
+<div class="bar" style="margin-top:8px"><button class="btn" id="zi">＋</button><button class="btn" id="zo">－</button><button class="btn" id="zf">맞춤</button><button class="btn" id="rs">배치 초기화</button><button class="btn" id="bk">백업</button><button class="btn" id="px" style="margin-left:auto">PNG로 저장</button></div>
+<div id="map"></div>
+<p class="note">분홍 실선 원은 내 최애, 점선 원은 CP 멤버·드림주예요. 인물을 누르면 수정, 꾹 끌면 위치를 옮길 수 있어요(나와 가깝게 두면 더 가까운 최애처럼 보여요). CP 선 위 글씨를 누르면 CP 수정이에요. 사진과 내용은 이 기기 브라우저에만 저장돼요.</p>
+</main>
+
+<dialog id="dc"><form method="dialog" onsubmit="return false">
+<b id="dcT">추가</b>
+<label>사진</label><div style="display:flex;gap:10px;align-items:center"><div class="pv" id="pv"></div><input type="file" id="fl" accept="image/*"></div>
+<label>이름</label><input type="text" id="cn" maxlength="30">
+<label>구분</label><div class="tp"><label><input type="radio" name="ct" value="fav">내 최애</label><label><input type="radio" name="ct" value="ship">CP 멤버 (최애 아님)</label><label><input type="radio" name="ct" value="dream">드림주</label></div>
+<div id="rw"><label>성별 (같은 성별끼리 모여 보입니다)</label><div class="tp"><label><input type="radio" name="cg" value="m">남자</label><label><input type="radio" name="cg" value="f">여자</label><label><input type="radio" name="cg" value="o">기타</label></div><label>나와의 관계 (서방님, 웬수놈편, 아내, 최애 등….)</label><input type="text" id="cr" maxlength="20"></div>
+<div class="acts"><button class="btn d" id="cd">삭제</button><button class="btn" id="cx">취소</button><button class="btn p" id="cs">저장</button></div>
+</form></dialog>
+
+<dialog id="ds"><form method="dialog" onsubmit="return false">
+<b id="dsT">CP 추가</b>
+<label>멤버 (2명 이상, 원하는 만큼 선택)</label><div class="pk" id="pk"></div>
+<div class="chips"><button type="button" id="ac1">＋ 최애 아닌 CP 멤버</button><button type="button" id="ac2">＋ 드림주</button></div>
+<label>CP 관계</label><input type="text" id="sr" maxlength="20">
+<div class="err" id="se"></div>
+<div class="acts"><button class="btn d" id="sd">삭제</button><button class="btn" id="sx">취소</button><button class="btn p" id="ss">저장</button></div>
+</form></dialog>
+
+<dialog id="dm"><form method="dialog" onsubmit="return false">
+<b>나</b>
+<label>사진</label><div style="display:flex;gap:10px;align-items:center"><div class="pv" id="mpv"></div><input type="file" id="mfl" accept="image/*"></div>
+<label>이름</label><input type="text" id="mn" maxlength="30">
+<div class="acts"><button class="btn" id="mx">취소</button><button class="btn p" id="ms">저장</button></div>
+</form></dialog>
+
+<dialog id="dk"><form method="dialog" onsubmit="return false"><b>사진 자르기</b><div class="cw"><canvas id="kc" width="280" height="280"></canvas><i></i></div><input type="range" id="kz" min="1" max="4" step="0.01" value="1"><div class="note" style="margin:6px 0 0">드래그로 위치, 슬라이더로 확대</div><div class="acts"><button class="btn" id="kx">취소</button><button class="btn p" id="ko">자르기 완료</button></div></form></dialog>
+
+<dialog id="db"><form method="dialog" onsubmit="return false"><b>백업 / 불러오기</b><div class="note" style="margin:6px 0;text-align:left">“백업 코드 만들기”로 나온 글자를 메모장 등에 보관해 두세요. 데이터가 사라졌을 때 아래 칸에 붙여넣고 “불러오기”를 누르면 돼요.</div><textarea id="bt" style="width:100%;height:120px;border:1px solid var(--ln);border-radius:8px;background:var(--bg);color:var(--tx);padding:8px"></textarea><div class="err" id="bm"></div><div class="acts"><button class="btn" id="bm1">백업 코드 만들기</button><button class="btn p" id="bm2">불러오기</button><button class="btn" id="bx">닫기</button></div></form></dialog>
+<dialog id="dp"><form method="dialog" onsubmit="return false"><b>PNG 이미지</b><div class="note" style="margin:6px 0">이미지를 길게 눌러 저장하세요.</div><img id="pi" alt="" style="width:100%;border-radius:8px"><div class="acts"><a class="btn" id="pa" download="최애관계표.png" style="text-decoration:none;color:inherit">파일로 받기</a><button class="btn p" id="pc">닫기</button></div></form></dialog>
+
+<script>
+var KEY="favRelChart.v1";
+var S={me:{name:"나",photo:""},showMe:true,chars:[],ships:[]};
+try{var raw=localStorage.getItem(KEY);if(raw){var o=JSON.parse(raw);if(o&&o.chars)S=o;}}catch(e){}
+var $=function(i){return document.getElementById(i)};
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function uid(){return "i"+Math.random().toString(36).slice(2,9)}
+function find(id){return id==="me"?{id:"me",name:S.me.name||"나",photo:S.me.photo}:S.chars.filter(function(c){return c.id===id})[0]}
+function cut(s){s=s||"";return s.length>9?s.slice(0,9)+"…":s}
+
+var zoom=null;
+function hsh(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))%9973;return h/9973}
+function render(mode){
+ $("showMe").checked=S.showMe;
+ var TAU=2*Math.PI,gx={m:0,f:1},cpI={},man=S.man||{};
+ S.ships.forEach(function(s,i){s.members.forEach(function(m){if(cpI[m]==null)cpI[m]=i})});
+ var isN=function(c){return c.type==="ship"||c.type==="dream"};
+ var gi=function(c){return gx[c.g]==null?2:gx[c.g]},ci=function(c){return cpI[c.id]==null?999:cpI[c.id]};
+ var gm={},groups=[];
+ S.chars.forEach(function(c,i){if(isN(c))return;var rl=(c.rel||"").trim(),k=rl?"r:"+rl:"u:"+c.id;
+  if(!gm[k]){gm[k]={k:k,rel:rl,m:[],i:i,gi:gi(c)};groups.push(gm[k])}gm[k].m.push(c)});
+ groups.forEach(function(g){g.m.sort(function(a,b){return ci(a)-ci(b)});g.ci=ci(g.m[0])});
+ groups.sort(function(a,b){return a.gi-b.gi||a.ci-b.ci||a.i-b.i});
+ var nf=0;groups.forEach(function(g){nf+=g.m.length});
+ var Rb=Math.max(150,nf*62/TAU),ang={},R={},pos={},rects=[];
+ var others=S.chars.filter(isN),grp={},left=[],rest=[];
+ if(S.showMe)rects.push([-50,-50,50,70]);
+ function box(id,x,y){
+  var o=find(id),non=isN(o),rr=non?24:32,nw=cut(o.name).length*12.5+6,
+  hw=Math.max(rr,nw/2)+4,top=rr+4,bot=rr+20+((!S.showMe&&!non&&o.rel)?12:0)+4;
+  return [x-hw,y-top,x+hw,y+bot];
+ }
+ function put(id,a,r0){
+  if(pos[id])return;
+  var r=r0,x=0,y=0,b;
+  for(var k=0;k<90;k++){x=r*Math.cos(a);y=r*Math.sin(a);b=box(id,x,y);var ok=true;
+   for(var q=0;q<rects.length;q++){var t=rects[q];if(b[0]<t[2]&&b[2]>t[0]&&b[1]<t[3]&&b[3]>t[1]){ok=false;break}}
+   if(ok)break;r+=10}
+  rects.push(b);pos[id]={x:x,y:y};R[id]=r;
+ }
+ S.chars.forEach(function(c){var m=man[c.id];if(m){pos[c.id]={x:m.x,y:m.y};ang[c.id]=Math.atan2(m.y,m.x);R[c.id]=Math.hypot(m.x,m.y);rects.push(box(c.id,m.x,m.y))}});
+ var a0=-Math.PI/2;
+ groups.forEach(function(g){var sec=TAU*g.m.length/nf,rg=Rb*(.8+.5*hsh(g.k));
+  g.m.forEach(function(c,j){if(pos[c.id])return;var a=a0+sec*(j+.5)/g.m.length+(hsh(c.id)-.5)*.12;ang[c.id]=a;put(c.id,a,rg+hsh(c.id)*25)});a0+=sec});
+ others.forEach(function(o){if(pos[o.id])return;var a=null;
+  S.ships.forEach(function(s){if(a||s.members.indexOf(o.id)<0)return;s.members.forEach(function(m){if(!a&&m!==o.id&&ang[m]!=null&&!isN(find(m)||{}))a=m})});
+  if(a)(grp[a]=grp[a]||[]).push(o);else left.push(o)});
+ Object.keys(grp).forEach(function(k){var g=grp[k];g.forEach(function(o,j){var a=ang[k]+(j-(g.length-1)/2)*.32;ang[o.id]=a;put(o.id,a,R[k]+95+hsh(o.id)*25)})});
+ left.forEach(function(o){if(pos[o.id])return;var a=null,m0=null;
+  S.ships.forEach(function(s){if(a!=null||s.members.indexOf(o.id)<0)return;s.members.forEach(function(m){if(a==null&&m!==o.id&&ang[m]!=null){a=ang[m];m0=m}})});
+  if(a!=null){ang[o.id]=a+.4;put(o.id,a+.4,R[m0]+(isN(find(m0))?20:95))}else rest.push(o)});
+ var mr=0;Object.keys(R).forEach(function(k){mr=Math.max(mr,R[k])});
+ rest.forEach(function(o,j){var a=Math.PI/2+(j-(rest.length-1)/2)*.4;ang[o.id]=a;put(o.id,a,mr+80)});
+ if(S.showMe)pos.me={x:0,y:0};
+ window._pos=pos;
+ var ids=[];groups.forEach(function(g){g.m.forEach(function(c){ids.push(c.id)})});others.forEach(function(o){ids.push(o.id)});
+ var x1,y1,W,H;
+ if(mode==="drag"&&window._vb){x1=window._vb[0];y1=window._vb[1];W=window._vb[2];H=window._vb[3]}
+ else{if(!rects.length)rects.push([-60,-60,60,60]);
+  x1=1e9;y1=1e9;var x2=-1e9,y2=-1e9;
+  rects.forEach(function(t){x1=Math.min(x1,t[0]);y1=Math.min(y1,t[1]);x2=Math.max(x2,t[2]);y2=Math.max(y2,t[3])});
+  x1-=14;y1-=14;x2+=14;y2+=14;W=x2-x1;H=y2-y1;window._vb=[x1,y1,W,H]}
+ var lines="",nodes="",labs="";
+ function lab(cls,x,y,t,s){return '<text class="lb '+cls+'"'+(s?' data-s="'+s+'"':'')+' x="'+x+'" y="'+(y+4)+'">'+esc(t)+'</text>'}
+ if(S.showMe)groups.forEach(function(g){
+  var ps=g.m.map(function(c){return pos[c.id]});
+  if(ps.length===1){var p=ps[0],d=Math.hypot(p.x,p.y)||1,t=(46+Math.max(d-32,70))/2/d;
+   lines+='<line class="rl" x1="0" y1="0" x2="'+p.x+'" y2="'+p.y+'"/>';
+   if(g.rel)labs+=lab("lr",p.x*t,p.y*t,cut(g.rel));return}
+  var cx=0,cy=0,md=1e9;ps.forEach(function(p){cx+=p.x;cy+=p.y;md=Math.min(md,Math.hypot(p.x,p.y))});cx/=ps.length;cy/=ps.length;
+  var dc=Math.hypot(cx,cy)||1,Bl=Math.max(80,Math.min(dc*.5+20,md-45)),bx=cx/dc*Bl,by=cy/dc*Bl,t=(46+Bl)/2/Bl;
+  lines+='<line class="rl" x1="0" y1="0" x2="'+bx+'" y2="'+by+'"/>';
+  ps.forEach(function(p){lines+='<line class="rl" x1="'+bx+'" y1="'+by+'" x2="'+p.x+'" y2="'+p.y+'"/>'});
+  if(g.rel)labs+=lab("lr",bx*t,by*t,cut(g.rel));
+ });
+ S.ships.forEach(function(s){
+  var ms=s.members.filter(function(m){return pos[m]}),lb=cut(s.rel)||"CP";
+  if(ms.length<2)return;
+  if(ms.length===2){var a=pos[ms[0]],b=pos[ms[1]],mx=(a.x+b.x)/2,my=(a.y+b.y)/2,dx=b.x-a.x,dy=b.y-a.y,L=Math.sqrt(dx*dx+dy*dy)||1,
+    vx=mx,vy=my,vl=Math.sqrt(vx*vx+vy*vy),bend=50;
+   if(ms.indexOf("me")>-1||vl<20){vx=-dy;vy=dx;vl=L}else if(L<130)bend=0;
+   var qx=mx+vx/vl*bend,qy=my+vy/vl*bend,d='M'+a.x+' '+a.y+' Q'+qx+' '+qy+' '+b.x+' '+b.y;
+   lines+='<path class="cp" d="'+d+'"/><path class="hit" data-s="'+s.id+'" d="'+d+'"/>';
+   labs+=lab("lc",mx/2+qx/2,my/2+qy/2,lb,s.id);
+  }else{var hx=0,hy=0;ms.forEach(function(m){hx+=pos[m].x;hy+=pos[m].y});hx/=ms.length;hy/=ms.length;
+   ms.forEach(function(m){lines+='<line class="cp" x1="'+pos[m].x+'" y1="'+pos[m].y+'" x2="'+hx+'" y2="'+hy+'"/><line class="hit" data-s="'+s.id+'" x1="'+pos[m].x+'" y1="'+pos[m].y+'" x2="'+hx+'" y2="'+hy+'"/>'});
+   lines+='<circle cx="'+hx+'" cy="'+hy+'" r="7" fill="var(--ac)" data-s="'+s.id+'" style="cursor:pointer"/>';
+   labs+=lab("lc",hx,hy+18,lb,s.id);}
+ });
+ var order=ids.slice();if(S.showMe)order.push("me");
+ order.forEach(function(id,i){
+  var p=pos[id],o=find(id),me=id==="me",non=!me&&isN(o),r=me?46:non?24:32,k="k"+i,x=p.x,y=p.y;
+  nodes+='<g class="'+(me?"me":non?"dsh":"fv")+'" '+(me?'data-me="1"':'data-c="'+id+'"')+' style="cursor:pointer"><clipPath id="'+k+'"><circle cx="'+x+'" cy="'+y+'" r="'+r+'"/></clipPath><circle class="nd" cx="'+x+'" cy="'+y+'" r="'+r+'"/>'+
+   (o.photo?'<image href="'+o.photo+'" x="'+(x-r)+'" y="'+(y-r)+'" width="'+2*r+'" height="'+2*r+'" preserveAspectRatio="xMidYMid slice" clip-path="url(#'+k+')"/><circle class="nd" cx="'+x+'" cy="'+y+'" r="'+r+'" style="fill:none"/>':'<text class="ini" x="'+x+'" y="'+(y+8)+'">'+esc((o.name||"?").slice(0,1))+'</text>')+
+   '<text class="t" x="'+x+'" y="'+(y+r+14)+'">'+esc(cut(o.name))+'</text>';
+  if(!me&&!non&&!S.showMe&&o.rel)nodes+='<text class="t m" x="'+x+'" y="'+(y+r+26)+'">'+esc(cut(o.rel))+'</text>';
+  nodes+='</g>';
+ });
+ var avail=$("map").clientWidth||360,fit=avail/W,z=zoom==null?Math.max(.7,fit):zoom;
+ window._fit=fit;window._z=z;
+ var h='<svg viewBox="'+x1+' '+y1+' '+W+' '+H+'" style="width:'+Math.round(W*z)+'px">'+lines+nodes+labs+'</svg>';
+ if(!S.chars.length)h+='<div class="hint">“＋ 최애 추가”로 첫 최애를 넣어보세요.</div>';
+ var sl=$("map").scrollLeft;
+ $("map").innerHTML=h;
+ if(mode==="drag")$("map").scrollLeft=sl;else if(W*z>avail)$("map").scrollLeft=(W*z-avail)/2;
+}
+
+var K={im:null,z:1,cx:140,cy:140,b:1,cb:null},kc=$("kc"),kx=kc.getContext("2d"),kp=null;
+function kdraw(){var w=K.im.width*K.b*K.z,h=K.im.height*K.b*K.z;K.cx=Math.min(w/2,Math.max(280-w/2,K.cx));K.cy=Math.min(h/2,Math.max(280-h/2,K.cy));kx.fillStyle="#000";kx.fillRect(0,0,280,280);kx.drawImage(K.im,K.cx-w/2,K.cy-h/2,w,h)}
+function shrink(file,cb){var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){K.im=im;K.b=280/Math.min(im.width,im.height);K.z=1;K.cx=K.cy=140;K.cb=cb;$("kz").value=1;kdraw();$("dk").showModal()};im.src=r.result};r.readAsDataURL(file)}
+$("kz").oninput=function(){K.z=+this.value;kdraw()};
+kc.onpointerdown=function(e){kp=[e.clientX,e.clientY];kc.setPointerCapture(e.pointerId)};
+kc.onpointermove=function(e){if(!kp)return;K.cx+=e.clientX-kp[0];K.cy+=e.clientY-kp[1];kp=[e.clientX,e.clientY];kdraw()};
+kc.onpointerup=kc.onpointercancel=function(){kp=null};
+$("kx").onclick=function(){$("dk").close()};
+$("ko").onclick=function(){var t=document.createElement("canvas");t.width=t.height=240;t.getContext("2d").drawImage(kc,0,0,280,280,0,0,240,240);K.cb(t.toDataURL("image/jpeg",0.82));$("dk").close()};
+function setPv(el,p){el.style.backgroundImage=p?"url("+p+")":"none"}
+function arm(btn,fn){btn.textContent="삭제";btn._a=0;btn.onclick=function(){if(!btn._a){btn._a=1;btn.textContent="한 번 더 누르면 삭제";return}fn()}}
+
+var cur=null,tmp="";
+function tpS(){$("rw").style.display=document.querySelector('input[name=ct]:checked').value==="fav"?"":"none"}
+document.querySelectorAll('input[name=ct]').forEach(function(r){r.onchange=tpS});
+function openC(id,tp){
+ cur=id?find(id):null;tmp=cur?cur.photo:"";tp=cur?(cur.type||"fav"):(tp||"fav");
+ $("dcT").textContent=cur?"수정":"추가";
+ $("cn").value=cur?cur.name:"";$("cr").value=cur?(cur.rel||""):"";
+ document.querySelector('input[name=ct][value='+tp+']').checked=true;tpS();document.querySelector('input[name=cg][value='+((cur&&cur.g)||"o")+']').checked=true;
+ setPv($("pv"),tmp);$("fl").value="";
+ $("cd").style.display=cur?"":"none";arm($("cd"),delC);$("dc").showModal();
+}
+function delC(){
+ var id=cur.id;
+ S.chars=S.chars.filter(function(c){return c.id!==id});
+ S.ships.forEach(function(s){s.members=s.members.filter(function(m){return m!==id})});
+ S.ships=S.ships.filter(function(s){return s.members.length>1});
+ save();render();$("dc").close();
+}
+$("fl").onchange=function(){if(this.files[0])shrink(this.files[0],function(d){tmp=d;setPv($("pv"),d)})};
+$("cx").onclick=function(){$("dc").close()};
+$("cs").onclick=function(){
+ var n=$("cn").value.trim();if(!n){$("cn").focus();return}
+ var tp=document.querySelector('input[name=ct]:checked').value;
+ var d={name:n,photo:tmp,type:tp,g:document.querySelector('input[name=cg]:checked').value,rel:tp==="fav"?$("cr").value.trim():""};
+ if(cur)Object.assign(cur,d);else{d.id=uid();S.chars.push(d);if($("ds").open){var sel=pkSel();sel.push(d.id);pkR(sel)}}
+ save();render();$("dc").close();
+};
+
+var cs=null;
+function pkR(sel){var opts=[{id:"me",name:(S.me.name||"나")+" (나)"}].concat(S.chars),h="";opts.forEach(function(o){h+='<label><input type="checkbox" value="'+o.id+'"'+(sel.indexOf(o.id)>-1?" checked":"")+'>'+esc(o.name)+(o.type==="dream"?' <span class="bd">드림주</span>':'')+'</label>'});$("pk").innerHTML=h}
+function pkSel(){return [].slice.call($("pk").querySelectorAll("input:checked")).map(function(i){return i.value})}
+$("ac1").onclick=function(){openC(null,"ship")};
+$("ac2").onclick=function(){openC(null,"dream")};
+function openS(id){
+ cs=id?S.ships.filter(function(s){return s.id===id})[0]:null;
+ pkR(cs?cs.members:[]);$("sr").value=cs?cs.rel:"";$("se").textContent="";
+ $("dsT").textContent=cs?"CP 수정":"CP 추가";$("sd").style.display=cs?"":"none";
+ arm($("sd"),function(){S.ships=S.ships.filter(function(s){return s!==cs});save();render();$("ds").close()});$("ds").showModal();
+}
+$("sx").onclick=function(){$("ds").close()};
+$("ss").onclick=function(){
+ var ids=pkSel();
+ if(ids.length<2){$("se").textContent="2명 이상 골라주세요.";return}
+ if(cs){cs.members=ids;cs.rel=$("sr").value.trim()}else S.ships.push({id:uid(),members:ids,rel:$("sr").value.trim()});
+ save();render();$("ds").close();
+};
+
+var mt="";
+$("mfl").onchange=function(){if(this.files[0])shrink(this.files[0],function(d){mt=d;setPv($("mpv"),d)})};
+$("mx").onclick=function(){$("dm").close()};
+$("ms").onclick=function(){S.me.name=$("mn").value.trim()||"나";S.me.photo=mt;save();render();$("dm").close()};
+
+$("addC").onclick=function(){openC()};
+$("addS").onclick=function(){openS()};
+$("showMe").onchange=function(){S.showMe=this.checked;save();render()};
+document.addEventListener("click",function(e){
+ var t=e.target.closest("[data-c],[data-me],[data-s]");if(!t||!t.closest("#map"))return;
+ if(t.dataset.c)openC(t.dataset.c);
+ else if(t.dataset.s)openS(t.dataset.s);
+ else{mt=S.me.photo;$("mn").value=S.me.name;setPv($("mpv"),mt);$("mfl").value="";$("dm").showModal()}
+});
+$("zi").onclick=function(){zoom=Math.min(2.5,window._z*1.25);render()};
+$("zo").onclick=function(){zoom=Math.max(.3,window._z/1.25);render()};
+$("zf").onclick=function(){zoom=window._fit;render()};
+$("pc").onclick=function(){$("dp").close()};
+$("px").onclick=function(){
+ var svg=$("map").querySelector("svg"),cl=svg.cloneNode(true),a=svg.querySelectorAll("*"),b=cl.querySelectorAll("*"),
+ P=["fill","stroke","stroke-width","stroke-dasharray","font-size","font-weight","font-family","text-anchor","paint-order","opacity","filter"],
+ V=svg.viewBox.baseVal.width,H=svg.viewBox.baseVal.height,ns="http://www.w3.org/2000/svg";
+ for(var i=0;i<a.length;i++){var c=getComputedStyle(a[i]);for(var j=0;j<P.length;j++)b[i].style.setProperty(P[j],c.getPropertyValue(P[j]))}
+ cl.removeAttribute("style");cl.setAttribute("xmlns",ns);cl.setAttribute("width",V*2);cl.setAttribute("height",H*2);
+ var r=document.createElementNS(ns,"rect");var vb=svg.viewBox.baseVal;r.setAttribute("x",vb.x);r.setAttribute("y",vb.y);r.setAttribute("width",vb.width);r.setAttribute("height",vb.height);r.setAttribute("fill",getComputedStyle(document.body).backgroundColor);
+ cl.insertBefore(r,cl.firstChild);
+ var im=new Image();
+ im.onload=function(){var cv=document.createElement("canvas");cv.width=V*2;cv.height=H*2;cv.getContext("2d").drawImage(im,0,0,V*2,H*2);
+  try{var u=cv.toDataURL("image/png");$("pi").src=u;$("pa").href=u;$("dp").showModal()}catch(e){alert("이미지를 만들지 못했어요. 화면 캡처를 이용해 주세요.")}};
+ im.onerror=function(){alert("이미지를 만들지 못했어요. 화면 캡처를 이용해 주세요.")};
+ im.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(new XMLSerializer().serializeToString(cl));
+};
+var DB=null,UID=null,sv=null,savedPh={},chain=Promise.resolve();
+function save(){
+ S.ts=Date.now();
+ try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}
+ clearTimeout(sv);sv=setTimeout(function(){chain=chain.then(push)},700);
+}
+async function push(){
+ if(!DB)return;
+ try{
+  var col=DB.collection("data/users/"+UID),o=JSON.parse(JSON.stringify(S));
+  o.me.photo="";o.chars.forEach(function(c){c.photo=""});
+  await col.doc("chart").set(o);
+  var now={me:S.me.photo||""};S.chars.forEach(function(c){now[c.id]=c.photo||""});
+  for(var k in now){if(now[k]!==(savedPh[k]||"")){
+   if(now[k])await col.doc("ph_"+k).set({d:now[k]});else await col.doc("ph_"+k).delete();
+   savedPh[k]=now[k]}}
+  for(var q in savedPh){if(!(q in now)){await col.doc("ph_"+q).delete();delete savedPh[q]}}
+ }catch(e){}
+}
+(async function(){
+ try{
+  if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
+  if(typeof claude==="undefined")return;
+  var d=await claude.use("db"),u=await claude.use("user");
+  if(!d||!u)return;
+  DB=d;UID=await u.id();
+  var snap=await DB.collection("data/users/"+UID).get(),docs={};
+  snap.docs.forEach(function(x){if(x.exists)docs[x.id]=x.data()});
+  var r=docs.chart;
+  if(r&&(r.ts||0)>=(S.ts||0)){
+   r.me=r.me||{name:"나"};r.me.photo=(docs.ph_me&&docs.ph_me.d)||"";
+   (r.chars||[]).forEach(function(c){c.photo=(docs["ph_"+c.id]&&docs["ph_"+c.id].d)||""});
+   S=r;savedPh={me:r.me.photo};S.chars.forEach(function(c){savedPh[c.id]=c.photo});
+   try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+   render();
+  }else if(S.chars.length||S.ships.length){chain=chain.then(push)}
+ }catch(e){}
+})();
+$("bk").onclick=function(){$("bt").value="";$("bm").textContent="";$("db").showModal()};
+$("bx").onclick=function(){$("db").close()};
+$("bm1").onclick=function(){
+ var t=JSON.stringify(S);$("bt").value=t;$("bt").focus();$("bt").select();
+ try{navigator.clipboard.writeText(t).then(function(){$("bm").textContent="복사됐어요. 메모장 등에 붙여넣어 보관하세요."},function(){$("bm").textContent="글자를 길게 눌러 전체 복사하세요."})}catch(e){$("bm").textContent="글자를 길게 눌러 전체 복사하세요."}
+};
+$("bm2").onclick=function(){
+ try{var o=JSON.parse($("bt").value);if(!o||!o.chars||!o.ships||!o.me)throw 0;S=o;save();render();$("db").close()}
+ catch(e){$("bm").textContent="백업 코드가 올바르지 않아요. 전체를 그대로 붙여넣어 주세요."}
+};
+var drag=null;
+function svgPt(e){var s=$("map").querySelector("svg"),pt=s.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;return pt.matrixTransform(s.getScreenCTM().inverse())}
+$("map").addEventListener("pointerdown",function(e){
+ var g=e.target.closest("g[data-c]");if(!g||!window._pos)return;
+ var id=g.dataset.c,o=window._pos[id];if(!o)return;var p=svgPt(e);
+ drag={id:id,sx:e.clientX,sy:e.clientY,ox:o.x-p.x,oy:o.y-p.y,on:false,pid:e.pointerId};
+});
+$("map").addEventListener("pointermove",function(e){
+ if(!drag)return;
+ if(!drag.on){if(Math.abs(e.clientX-drag.sx)+Math.abs(e.clientY-drag.sy)<8)return;drag.on=true;try{$("map").setPointerCapture(drag.pid)}catch(x){}}
+ var p=svgPt(e);if(!S.man)S.man={};S.man[drag.id]={x:p.x+drag.ox,y:p.y+drag.oy};render("drag");e.preventDefault();
+});
+function dEnd(){if(drag&&drag.on){save();window._dg=true;setTimeout(function(){window._dg=false},80);render()}drag=null}
+$("map").addEventListener("pointerup",dEnd);$("map").addEventListener("pointercancel",dEnd);
+$("rs").onclick=function(){S.man={};save();render()};
+render();
+</script>
+
+
+</body>
+</html>
